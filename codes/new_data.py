@@ -69,6 +69,11 @@ class HSIDataLoader(object):
         self.split_row = 0
         self.split_col = 0
 
+        self.light_split_ori_shape = None
+        self.light_split_map = [] 
+
+
+
     def load_data(self):
         data, labels = None, None
         if self.data_sign == "Indian":
@@ -102,24 +107,38 @@ class HSIDataLoader(object):
         col = w // patch_size
         if w % patch_size != 0:
             col += 1
-        step_row = h // row
-        step_col = w // col
         res = np.zeros((row*col, patch_size, patch_size, c))
+        self.light_split_ori_shape = X.shape
         resY = np.zeros((row*col))
         index = 0
         for i in range(row):
             for j in range(col):
-                start_row = i*step_row
+                start_row = i*patch_size
                 if start_row + patch_size > h:
                     start_row = h - patch_size 
-                start_col = j*step_col
+                start_col = j*patch_size
                 if start_col + patch_size > w:
                     start_col = w - patch_size
                 
                 res[index, :,:,:] = X[start_row:start_row+patch_size, start_col:start_col+patch_size, :]
+                self.light_split_map.append([index, start_row, start_row+patch_size, start_col, start_col+patch_size])
                 index += 1
         return res, resY
         
+    def reconstruct_image_by_light_split(self, inputX, pathch_size=1):
+        '''
+        input shape is (batch, h, w, c)
+        '''
+        assert self.light_split_ori_shape is not None
+        ori_h, ori_w, ori_c = self.light_split_ori_shape
+        batch, h, w, c = inputX.shape
+        assert batch == len(self.light_split_map) # light_split_map必须与batch值相同
+        X = np.zeros((ori_h, ori_w, c))
+        for tup in self.light_split_map:
+            index, start_row, end_row, start_col, end_col = tup
+            X[start_row:end_row, start_col:end_col, :] = inputX[index, :, :, :]
+        return X
+
 
     def get_patches_by_split(self, X, Y, patch_size=1):
         h, w, c = X.shape
