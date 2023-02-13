@@ -102,17 +102,17 @@ class HSIDataLoader(object):
         col = w // patch_size
         if w % patch_size != 0:
             col += 1
-        step_row = h // row
-        step_col = w // col
+        # step_row = h // row
+        # step_col = w // col
         res = np.zeros((row*col, patch_size, patch_size, c))
         resY = np.zeros((row*col))
         index = 0
         for i in range(row):
             for j in range(col):
-                start_row = i*step_row
+                start_row = i*patch_size
                 if start_row + patch_size > h:
                     start_row = h - patch_size 
-                start_col = j*step_col
+                start_col = j*patch_size
                 if start_col + patch_size > w:
                     start_col = w - patch_size
                 

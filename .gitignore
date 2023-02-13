@@ -1,3 +1,5 @@
 jupyter
 codes/__pycache__
 codes/res
+codes/save_model
+codes/.ipynb_checkpoints/

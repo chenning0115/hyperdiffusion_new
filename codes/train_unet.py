@@ -17,7 +17,7 @@ from diffusion import Diffusion
 from utils import AvgrageMeter, recorder, show_img
 
 batch_size = 256
-patch_size = 32
+patch_size = 16
 select_spectral = []
 spe = 200
 channel = 1 #3d channel
@@ -26,8 +26,8 @@ epochs = 100000 # Try more!
 lr = 1e-4
 T=500
 
-rgb = [0,100,199]
-path_prefix = "./save_model/unet3d_patch64"
+rgb = [30,100,199]
+path_prefix = "./save_model/unet3d_patch16_without_downsample_kernal5_fix"
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -56,6 +56,22 @@ def plot_by_images_v2(imgs, rgb=[1,100,199]):
         show_img(img)
     plt.show()            
     
+def plot_spectral(x0, recon_x0, num=3):
+    '''
+    x0, recon_x0 shape is (batch, channel, spectral, h, w)
+    '''
+    batch, c, s, h ,w = x0.shape
+    step = h // num
+    plt.figure(figsize=(20,5))
+    for ii in range(num):
+        i = ii * step
+        x0_spectral = x0[0,0,:,i,i]
+        recon_x0_spectral = recon_x0[0,0,:,i,i]
+        plt.subplot(1,num,ii+1)
+        plt.plot(x0_spectral, label="x0")
+        plt.plot(recon_x0_spectral, label="recon")
+        plt.legend()
+    plt.show()
 
 def recon_all_fig(diffusion, model, splitX, dataloader, big_img_size=[145, 145]):
     '''
@@ -90,11 +106,11 @@ def sample_by_t(diffusion, model, X):
         t = torch.full((1,), ti, device=device, dtype=torch.long)
         xt, tmp_noise = diffusion.forward_diffusion_sample(x0, t, device)
         _, recon_from_xt = diffusion.reconstruct(model, xt=xt, tempT=t, num = 5)
+        recon_x0 = recon_from_xt[-1]
         recon_from_xt.append(x0)
         print('---',ti,'---')
         plot_by_imgs(recon_from_xt, rgb=rgb)
- 
-
+        plot_spectral(x0, recon_x0)
 
 def sample_eval(diffusion, model, X):
     all_size, channel, spe, h, w = X.shape
