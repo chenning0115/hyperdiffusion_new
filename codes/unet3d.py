@@ -108,7 +108,7 @@ class SimpleUnet(nn.Module):
             residual_inputs.append(x)
         for up in self.ups:
             residual_x = residual_inputs.pop()
-#             print("down=",residual_x.shape, "up=", x.shape)
+            # print("down=",residual_x.shape, "up=", x.shape)
             # Add residual x as additional channels
             x = torch.cat((x, residual_x), dim=1) 
             if feature:
@@ -118,14 +118,15 @@ class SimpleUnet(nn.Module):
 
     def return_features(self):
         temp_features = []
-        for f in self.features:
-            batch, channel, spe, w, h = f.shape
-            temp_features.append(f.reshape(-1,w,h))
-        return np.concatenate(temp_features, axis=0)
+        temp_features = self.features[:]
+        self.features = []
+        return temp_features
             
 
 
 
 if __name__ == "__main__":
-    model = SimpleUnet(_image_channels=200)
-    print(model)
+    model = SimpleUnet(_image_channels=1)
+    t = torch.full((1,), 100,  dtype=torch.long)
+    a = torch.randn((100,1,200,16,16))
+    model(a, t)
