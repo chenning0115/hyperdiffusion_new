@@ -128,5 +128,5 @@ class SimpleUnet(nn.Module):
 if __name__ == "__main__":
     model = SimpleUnet(_image_channels=1)
     t = torch.full((1,), 100,  dtype=torch.long)
-    a = torch.randn((100,1,200,16,16))
-    model(a, t)
+    a = torch.randn((100,1,104,16,16))
+    print(model(a, t))

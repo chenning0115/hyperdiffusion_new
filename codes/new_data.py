@@ -79,8 +79,9 @@ class HSIDataLoader(object):
         if self.data_sign == "Indian":
             data = sio.loadmat('../data/Indian_pines_corrected.mat')['indian_pines_corrected']
             labels = sio.loadmat('../data/Indian_pines_gt.mat')['indian_pines_gt']
-        elif self.data_sign == "piava":
-            pass
+        elif self.data_sign == "Pavia":
+            data = sio.loadmat('../../data/PaviaU.mat')['paviaU']
+            labels = sio.loadmat('../../data/PaviaU_gt.mat')['paviaU_gt']
         else:
             pass
         if len(self.select_spectral) > 0:  #user choose spectral himself
@@ -218,6 +219,21 @@ class HSIDataLoader(object):
             Y_patchs = Y_patchs[Y_patchs>0]
             Y_patchs -= 1
         return X_patchs, Y_patchs #(batch, w, h, c), (batch)
+    
+
+    def custom_process(self, data):
+        '''
+        pavia数据集 增加一个光谱维度 从103->104 其中第104维为103的镜像维度
+        data shape is [h, w, spe]
+        '''
+
+        if self.data_sign == "Pavia":
+            h, w, spe = data.shape
+            new_data = np.zeros((h,w,spe+1))
+            new_data[:,:,:spe] = data
+            new_data[:,:,spe] = data[:,:,spe-1]
+            return new_data
+
 
     def generate_torch_dataset(self, split=False, light_split=False):
         #1. 根据data_sign load data
@@ -232,6 +248,9 @@ class HSIDataLoader(object):
          
         print('[data] load data shape data=%s, label=%s' % (str(norm_data.shape), str(self.labels.shape)))
         self.data = norm_data
+
+        #1.2 专门针对特殊的数据集补充或删减一些光谱维度
+        norm_data = self.custom_process(norm_data)
 
         #2. 获取patchs
         if not split and not light_split:
@@ -264,9 +283,13 @@ class HSIDataLoader(object):
 
 
 if __name__ == "__main__":
-    dataloader = HSIDataLoader({"data":{"padding":False, "select_spectral":[1,99,199]}})
-    train_loader = dataloader.generate_torch_dataset()
+    # dataloader = HSIDataLoader({"data":{"padding":False, "select_spectral":[1,99,199]}})
+    # train_loader = dataloader.generate_torch_dataset()
     # train_loader,X,Y = dataloader.generate_torch_dataset(split=True)
     # newX = dataloader.re_build_split(X, dataloader.patch_size)
     # print(newX.shape)
     
+    dataloader = HSIDataLoader(
+        {"data":{"data_sign":"Pavia", "padding":False, "batch_size":256, "patch_size":16, "select_spectral":[]}})
+    train_loader,X,Y = dataloader.generate_torch_dataset(light_split=True)
+    print(X.shape)

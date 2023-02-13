@@ -19,15 +19,15 @@ from utils import AvgrageMeter, recorder, show_img
 batch_size = 256
 patch_size = 16
 select_spectral = []
-spe = 200
+spe = 103
 channel = 1 #3d channel
 
 epochs = 100000 # Try more!
 lr = 1e-4
 T=500
 
-rgb = [30,100,199]
-path_prefix = "./save_model/unet3d_patch16_without_downsample_kernal5_fix"
+rgb = [30,50,90]
+path_prefix = "./save_model/pavia_unet3d_patch16_without_downsample_kernal5_fix"
 
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -140,7 +140,8 @@ def save_model(model, path):
 
 
 def train():
-    dataloader = HSIDataLoader({"data":{"padding":False, "batch_size":batch_size, "patch_size":patch_size, "select_spectral":select_spectral}})
+    dataloader = HSIDataLoader(
+        {"data":{"data_sign":"Pavia", "padding":False, "batch_size":batch_size, "patch_size":patch_size, "select_spectral":select_spectral}})
     train_loader,X,Y = dataloader.generate_torch_dataset(light_split=True)
     diffusion = Diffusion(T=T)
     model = SimpleUnet(_image_channels=channel)
