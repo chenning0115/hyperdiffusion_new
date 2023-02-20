@@ -82,8 +82,12 @@ class HSIDataLoader(object):
         elif self.data_sign == "Pavia":
             data = sio.loadmat('../../data/PaviaU.mat')['paviaU']
             labels = sio.loadmat('../../data/PaviaU_gt.mat')['paviaU_gt']
+        elif self.data_sign == "Houston":
+            data = sio.loadmat('../../data/Houston.mat')['img']
+            labels = sio.loadmat('../../data/Houston_gt.mat')['Houston_gt']
         else:
             pass
+        print("ori data load shape is", data.shape, labels.shape)
         if len(self.select_spectral) > 0:  #user choose spectral himself
             data = data[:,:,self.select_spectral]
         return data, labels
@@ -233,6 +237,7 @@ class HSIDataLoader(object):
             new_data[:,:,:spe] = data
             new_data[:,:,spe] = data[:,:,spe-1]
             return new_data
+        return data
 
 
     def generate_torch_dataset(self, split=False, light_split=False):
@@ -289,7 +294,12 @@ if __name__ == "__main__":
     # newX = dataloader.re_build_split(X, dataloader.patch_size)
     # print(newX.shape)
     
+    #dataloader = HSIDataLoader(
+    #    {"data":{"data_sign":"Pavia", "padding":False, "batch_size":256, "patch_size":16, "select_spectral":[]}})
+    #train_loader,X,Y = dataloader.generate_torch_dataset(light_split=True)
+    #print(X.shape)
+
     dataloader = HSIDataLoader(
-        {"data":{"data_sign":"Pavia", "padding":False, "batch_size":256, "patch_size":16, "select_spectral":[]}})
+        {"data":{"data_sign":"Houston", "padding":False, "batch_size":256, "patch_size":16, "select_spectral":[]}})
     train_loader,X,Y = dataloader.generate_torch_dataset(light_split=True)
     print(X.shape)

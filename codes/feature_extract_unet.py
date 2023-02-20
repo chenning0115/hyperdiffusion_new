@@ -1,3 +1,5 @@
+import os,sys
+#os.environ["CUDA_VISIBLE_DEVICES"]="1"
 import torch
 import torchvision
 from torchvision import transforms 
@@ -7,7 +9,6 @@ import torch.nn.functional as F
 import numpy as np
 import math
 import matplotlib.pyplot as plt
-import os,sys
 
 from new_data import HSIDataLoader, TestDS, TrainDS
 from unet3d import SimpleUnet
@@ -16,20 +17,20 @@ from unet import UNetModel
 from diffusion import Diffusion
 from utils import AvgrageMeter, recorder, show_img
 
-batch_size = 256
+batch_size = 128
 patch_size = 16
 select_spectral = []
-spe = 200
+spe = 144
 channel = 1 #3d channel
 
 epochs = 100000 # Try more!
 lr = 1e-4
 T=500
 
-rgb = [0,100,199]
-model_load_path = "./save_model/unet3d_patch16_without_downsample_kernal5_fix"
-model_name = "unet3d_27000.pkl"
-save_feature_path_prefix = "./save_feature/unet3d_patch16_without_downsample_kernal5_fix/save_feature"
+rgb = [50,60,130]
+model_load_path = "./save_model/houston_unet3d_patch16_without_downsample_kernal5_fix"
+model_name = "unet3d_1000.pkl"
+save_feature_path_prefix = "./save_feature/houston_unet3d_patch16_without_downsample_kernal5_fix/save_feature"
 
 TList = [5, 10, 100, 200, 400]
 
@@ -211,7 +212,7 @@ def save_model(model, path):
 
 
 def extract():
-    dataloader = HSIDataLoader({"data":{"padding":False, "batch_size":batch_size, "patch_size":patch_size, "select_spectral":select_spectral}})
+    dataloader = HSIDataLoader({"data":{"data_sign":"Houston", "padding":False, "batch_size":batch_size, "patch_size":patch_size, "select_spectral":select_spectral}})
     train_loader,X,Y = dataloader.generate_torch_dataset(light_split=True)
     diffusion = Diffusion(T=T)
 
